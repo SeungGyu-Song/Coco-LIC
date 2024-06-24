@@ -209,7 +209,7 @@ namespace cocolic
           trajectory_->AddBlendMat(offset - i);  // blending matrix is computed by knots of b-spline
         }
         trajectory_manager_->SetDivision(cp_add_num_cur);
-        trajectory_->startIdx = trajectory_->knts.size() - 1 - offset - 2;  // 2 serves as a margin or tolerance
+        trajectory_->startIdx = trajectory_->knts.size() - 1 - offset - 2;  // 2 serves as a margin or tolerance //? start index가 뭐지?
         if (trajectory_->startIdx < 0)
         {
           trajectory_->startIdx = 0;
@@ -288,7 +288,7 @@ namespace cocolic
                                            traj_max_time_ns_cur, cp_add_num_cur, non_uniform_);
 
     /// [3] update lidar local map
-    int active_idx = trajectory_->numKnots() - 1 - cp_add_num_cur - 2;
+    int active_idx = trajectory_->numKnots() - 1 - cp_add_num_cur - 2; // 이 -2가 대체 뭘까?
     trajectory_->SetActiveTime(trajectory_->knts[active_idx]);
     lidar_handler_->UpdateLidarSubMap();
 

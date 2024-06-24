@@ -230,7 +230,7 @@ namespace cocolic
     /// extend trajectory by adding control points
     trajectory_->SetMaxTimeNsNURBS(traj_max_time_ns);
     opt_max_t_ns = trajectory_->maxTimeNsNURBS();
-    SE3d last_knot = trajectory_->getLastKnot();
+    SE3d last_knot = trajectory_->getLastKnot(); // Trajectory_에서 접근하면 Control Point를 가져오는 거임. 
     trajectory_->extendKnotsTo(knot_add_num, last_knot);
 
     ////// color control point for visualization
@@ -277,7 +277,7 @@ namespace cocolic
     option.lock_ab = true;
     option.lock_wb = true;
     option.lock_g = true;
-    option.lock_tran = false; // note
+    option.lock_tran = false; // note // tran이 뭐지?
     option.show_residual_summary = verbose;
     TrajectoryEstimator::Ptr estimator(
         new TrajectoryEstimator(trajectory_, option, "Init Traj"));
