@@ -121,7 +121,7 @@ class Se3Spline {
           knts.push_back(-0.06 * S_TO_NS);
           knts.push_back(-0.03 * S_TO_NS);
           
-          // for (int i = 0; i < 3; i++) knts.push_back(0.0 * S_TO_NS);
+          // for (int i = 0; i < 3; i++) knts.push_back(0.0 * S_TO_NS);  //이렇게는 왜 안했지?
           
           blending_mats.clear();
           cumu_blending_mats.clear();

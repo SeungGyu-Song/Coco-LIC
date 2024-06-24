@@ -200,7 +200,7 @@ inline void OusterPointCloudTmp2RTPointCloud(
 inline void CloudToRelativeMeasureTime(RTPointCloud::Ptr& cloud,
                                        int64_t scan_timestamp,
                                        int64_t traj_start_time,
-                                       int64_t duration = 0.11 * 1e9) {
+                                       int64_t duration = 0.11 * 1e9) { //각 point마다 시간을 trajectory 기준으로 바꾸기
   RTPoint zero_point;
   zero_point.x = 0;
   zero_point.y = 0;

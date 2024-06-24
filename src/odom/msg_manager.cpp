@@ -462,8 +462,8 @@ namespace cocolic
     }
 
     /// 1 
-    // 
-    std::vector<int> unique_lidar_ids;
+    //  
+    std::vector<int> unique_lidar_ids; // lidar_buf_에 있는 애들 다 넣는 거네.
     for (const auto &data : lidar_buf_)
     {
       if (std::find(unique_lidar_ids.begin(), unique_lidar_ids.end(),
@@ -471,7 +471,7 @@ namespace cocolic
         continue;
       unique_lidar_ids.push_back(data.lidar_id);
     }
-    if (unique_lidar_ids.size() != num_lidars_)
+    if (unique_lidar_ids.size() != num_lidars_) // 이러면 만약 같은 종류의 lidar가 2개면 어떻게 되는 거지? config에 num_lidars를 한 개로 해야하나?
     {
       return false;
     }
@@ -480,7 +480,7 @@ namespace cocolic
     {
       if (t < traj_max)
       {
-        return false;
+        return false; // ??  traj_max가 느린 시간인데 이거보다 당연히 안에 있어야하는 거 아닌가? -> 어차피 처음에만 돌아가는 거.
       }
     }
     // 
@@ -503,7 +503,7 @@ namespace cocolic
       bool add_entire_scan = AddToMsg(msgs, it, traj_max);
       if (add_entire_scan)
       {
-        it = lidar_buf_.erase(it); // 
+        it = lidar_buf_.erase(it); // 지우면 iterator는 그 다음 거 반환하는 듯
       }
       else
       {

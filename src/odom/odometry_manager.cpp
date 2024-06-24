@@ -175,13 +175,14 @@ namespace cocolic
         }
       }
 
+      // 한 번 is_two_seg_prepared = true 되면 여기 안 들어감.
       /// [3] prepare data for the latest time interval delta_t
       static bool is_two_seg_prepared = false;
-      static int seg_msg_cnt = 0;
+      static int seg_msg_cnt = 0; //seg_msg_cnt를 2로 나눠주는 부분이 없나?
       if (!is_two_seg_prepared)
       {
-        if (PrepareTwoSegMsgs(seg_msg_cnt))  // prepare interval0 and interval1
-        {
+        if (PrepareTwoSegMsgs(seg_msg_cnt))  // prepare interval0 and interval1 // 아직 잘 이해가 가질 않음.
+        { 
           seg_msg_cnt++;
         }
         if (seg_msg_cnt == 2)  // if interval0 and interval1 are ready
@@ -194,14 +195,15 @@ namespace cocolic
         {
           continue;
         }
-      }
+      } 
 
       /// [4] update trajectory segment in the latest time interval delta_t
+      /// 위의 과정이 한 번씩 다 돌면 여기서만 놀게됨.
       if (PrepareMsgs())
       {
         // decide control point placement in the time interval delta_t by imu 
         UpdateOneSeg();  
-        int offset = cp_add_num_cur + cp_add_num_next + cp_add_num_next_next;
+        int offset = cp_add_num_cur + cp_add_num_next + cp_add_num_next_next; //?
         for (int i = 0; i < cp_add_num_cur; i++)
         {
           trajectory_->AddBlendMat(offset - i);  // blending matrix is computed by knots of b-spline
@@ -424,17 +426,17 @@ namespace cocolic
                            Eigen::Vector3d::Zero(), "map", "global");
   }
 
-  bool OdometryManager::PrepareTwoSegMsgs(int seg_idx)
+  bool OdometryManager::PrepareTwoSegMsgs(int seg_idx) // seg_idx = seg_cnt
   {
     if (!is_initialized_)
       return false;
 
-    int64_t data_start_time = trajectory_->GetDataStartTime();
+    int64_t data_start_time = trajectory_->GetDataStartTime(); // 마지막 trajectory시간 기준 imu 시간 가져오기.
     for (auto &data : msg_manager_->lidar_buf_)
     {
       if (!data.is_time_wrt_traj_start)
       {
-        data.ToRelativeMeasureTime(data_start_time);                             // 
+        data.ToRelativeMeasureTime(data_start_time);    // 각 point들을 trajectory 기준시간으로 맞추기                          // 
         msg_manager_->lidar_max_timestamps_[data.lidar_id] = data.max_timestamp; // 
       }
     }
@@ -446,32 +448,33 @@ namespace cocolic
         msg_manager_->image_max_timestamp_ = data.timestamp;
       }
     }
-    msg_manager_->RemoveBeginData(data_start_time, 0);
+    msg_manager_->RemoveBeginData(data_start_time, 0); // parameter가 0이라 내부 함수가 돌아가지 않음. 어떤 역할인지는 잘 모르겠음.
 
     // 
     // 
-    int64_t traj_max_time_ns = trajectory_->maxTimeNsNURBS() + t_add_ns_ * (seg_idx + 1);
+    int64_t traj_max_time_ns = trajectory_->maxTimeNsNURBS() + t_add_ns_ * (seg_idx + 1);  //0.03 + 0.1 * x
+    // t_add : trajectory is updated every delta_t seconds.
 
     // 
     // 
     bool have_msg = false;
     if (seg_idx == 0)
     {
-      int64_t traj_last_max_time_ns = trajectory_->maxTimeNsNURBS();
+      int64_t traj_last_max_time_ns = trajectory_->maxTimeNsNURBS(); // 0.03
       have_msg = msg_manager_->GetMsgs(msg_manager_->cur_msgs, traj_last_max_time_ns, traj_max_time_ns, data_start_time);
     }
     if (seg_idx == 1)
     {
       int64_t traj_last_max_time_ns = trajectory_->maxTimeNsNURBS() + t_add_ns_;
       have_msg = msg_manager_->GetMsgs(msg_manager_->next_msgs, traj_last_max_time_ns, traj_max_time_ns, data_start_time);
-    }
+    } //getMsgs를 통해서 시간 대에 image있냐 없냐, lidar정보를 처리함.
 
     // 
     if (have_msg)
     {
       while (!msg_manager_->imu_buf_.empty())
       {
-        trajectory_manager_->AddIMUData(msg_manager_->imu_buf_.front());
+        trajectory_manager_->AddIMUData(msg_manager_->imu_buf_.front()); // imu_data_에 trajectory 생성기준 시간으로 맞춰주기.
         msg_manager_->imu_buf_.pop_front();
       }
       if (seg_idx == 0)
@@ -492,7 +495,7 @@ namespace cocolic
 
   void OdometryManager::UpdateTwoSeg()
   {
-    auto imu_datas = trajectory_manager_->GetIMUData();
+    auto imu_datas = trajectory_manager_->GetIMUData(); //??? private인데 이렇게 받고 아래에서 time_stamp로 접근이 되나?
 
     /// update the first seg
     {
@@ -538,7 +541,7 @@ namespace cocolic
         int64_t time = trajectory_->maxTimeNsNURBS() + step * (i + 1);
         trajectory_->AddKntNs(time);
       }
-      trajectory_->AddKntNs(traj_max_time_ns_cur);
+      trajectory_->AddKntNs(traj_max_time_ns_cur); //이런 건 비슷하게 잘 했었네.
 
       cp_add_num_cur = cp_add_num;
     }
@@ -598,7 +601,7 @@ namespace cocolic
     if (!is_initialized_)
       return false;
 
-    int64_t data_start_time = trajectory_->GetDataStartTime();
+    int64_t data_start_time = trajectory_->GetDataStartTime(); // 그냥 trajectory 시작시간
     for (auto &data : msg_manager_->lidar_buf_)
     {
       if (!data.is_time_wrt_traj_start)
@@ -617,7 +620,7 @@ namespace cocolic
     }
     msg_manager_->RemoveBeginData(data_start_time, 0);
 
-    int64_t traj_max_time_ns = traj_max_time_ns_next + t_add_ns_;
+    int64_t traj_max_time_ns = traj_max_time_ns_next + t_add_ns_; // 
 
     int64_t traj_last_max_time_ns = traj_max_time_ns_next;
     bool have_msg = msg_manager_->GetMsgs(msg_manager_->next_next_msgs, traj_last_max_time_ns, traj_max_time_ns, data_start_time);

@@ -65,7 +65,7 @@ class Trajectory : public Se3Spline<SplineOrder, double> {
     EP_StoI_[IMUSensor] = EP_StoI;
   }
 
-  void AddKnt(double time) {
+  void AddKnt(double time) 
     knts.push_back(time * S_TO_NS);
   }
 
